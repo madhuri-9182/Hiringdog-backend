@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Interview Scheduling</title>
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #cfcbdb;
+            margin: 0;
+            padding: 0;
+            width: 100% !important;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
+        .email-container {
+            background: #cfcbdb;
+            padding: 20px;
+            color: #281d6b;
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .logo-section {
+            background: #281d6b;
+            padding: 10px;
+            text-align: left;
+            border-radius: 15px;
+            border: 1px solid black;
+        }
+
+        .email-content {
+            background: #fff;
+            padding: 0;
+            border-radius: 15px;
+            border: 1px solid #281d6b;
+        }
+
+        .email-content-content {
+            padding: 20px;
+        }
+
+        .email-content h5 {
+            color: #281d6b;
+            margin-bottom: 20px;
+        }
+
+        .email-content p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #281d6b;
+        }
+
+        .email-content a {
+            color: #281d6b;
+            text-decoration: none;
+        }
+
+        .scheduling-box {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 1px solid #281d6b;
+            border-top: 4px solid #4CAF50;
+            text-align: center;
+        }
+
+        .schedule-button {
+            display: inline-block;
+            padding: 18px 40px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white !important;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .schedule-button:hover {
+            background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .important-info {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #281d6b;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            color: #281d6b;
+        }
+
+        .info-icon {
+            font-size: 18px;
+            margin-right: 10px;
+            width: 25px;
+        }
+
+        .email-footer {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 20px;
+            color: #281d6b;
+        }
+
+        .email-footer a {
+            margin: 0 2px;
+            color: #281d6b;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .email-content-content {
+                padding: 10px;
+            }
+
+            .logo-section {
+                text-align: center;
+            }
+
+            .schedule-button {
+                padding: 15px 30px;
+                font-size: 14px;
+            }
+
+            .scheduling-box {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+
+<body style="background-color: #cfcbdb;">
+    <div class="email-container">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+            <tr>
+                <td>
+                    <div class="email-content">
+                        <div class="logo-section"
+                            style="padding: 15px 20px; margin: -1px -1px 0 -1px; border-radius: 15px 15px 0 0;">
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td width="80" style="vertical-align: middle;">
+                                        <img src="https://hiringdog-assets.s3.ap-south-1.amazonaws.com/Hiringdog.png"
+                                            alt="HiringDog" style="height: 80px; display: block;" />
+                                    </td>
+                                    <td style="vertical-align: middle; text-align: center;">
+                                        <span style="color: white; font-size: 24px; font-weight: bold;">Schedule Your
+                                            Interview</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="email-content-content">
+                            <table cellpadding="0" cellspacing="0" style="width: 100%; border: 0px;">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <p>Dear <strong>{{candidate_name}}</strong>,</p>
+
+                                            <p>
+                                                Congratulations! We are pleased to inform you that your application for
+                                                the position of
+                                                <strong>{{job_title}}</strong> {% if company_name %}at
+                                                <strong>{{company_name}}</strong>{% endif %}
+                                                has been shortlisted for the next round.
+                                            </p>
+
+                                            <div class="scheduling-box">
+                                                <table cellpadding="0" cellspacing="0" style="width: 100%;">
+                                                    <tr>
+                                                        <td style="text-align: center;">
+                                                            <div style="font-size: 32px; margin-bottom: 15px;">📅</div>
+                                                            <h3
+                                                                style="color: #281d6b; font-size: 20px; margin: 0 0 15px 0;">
+                                                                Ready to Schedule Your Interview?
+                                                            </h3>
+                                                            <p style="color: #666; margin: 15px 0; font-size: 14px;">
+                                                                Choose a convenient available time slot that works best
+                                                                for you
+                                                            </p>
+                                                            <a href="https://{{site_domain}}{{scheduling_link}}"
+                                                                class="schedule-button">
+                                                                🗓️ Schedule My Interview
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+
+                                            <div class="important-info">
+                                                <h4 style="color: #281d6b; margin-top: 0;">Important Information:</h4>
+
+                                                <div class="info-item">
+                                                    <span class="info-icon">🎯</span>
+                                                    <span><strong>Interview Type:</strong>
+                                                        {{interview_type|default:"Technical Interview"}}</span>
+                                                </div>
+
+                                                {% if interview_duration %}
+                                                <div class="info-item">
+                                                    <span class="info-icon">⏱️</span>
+                                                    <span><strong>Duration:</strong> {{interview_duration}}</span>
+                                                </div>
+                                                {% endif %}
+
+                                                {% if interview_mode %}
+                                                <div class="info-item">
+                                                    <span class="info-icon">💻</span>
+                                                    <span><strong>Mode:</strong> {{interview_mode}}</span>
+                                                </div>
+                                                {% endif %}
+
+                                                <div class="info-item">
+                                                    <span class="info-icon">📧</span>
+                                                    <span><strong>Confirmation:</strong> You'll receive interview
+                                                        details via email once scheduled</span>
+                                                </div>
+
+                                                {% if deadline %}
+                                                <div class="info-item">
+                                                    <span class="info-icon">📅</span>
+                                                    <span><strong>Schedule By:</strong> {{deadline}}</span>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+
+                                            {% if preparation_tips %}
+                                            <div class="important-info" style="border-left-color: #4CAF50;">
+                                                <h4 style="color: #281d6b; margin-top: 0;">💡 Preparation Tips:</h4>
+                                                <p>{{preparation_tips}}</p>
+                                            </div>
+                                            {% endif %}
+
+                                            <div class="important-info"
+                                                style="background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border-left-color: #F44336;">
+                                                <p style="margin: 0; color: #281d6b;">
+                                                    <strong>Important:</strong> This scheduling link will expire in
+                                                    <span style="color: #F44336; font-weight: bold;">7 days</span>.
+                                                    Please schedule your interview as soon as possible to secure your
+                                                    preferred time slot.
+                                                </p>
+                                            </div>
+
+                                            <p>
+                                                Please schedule your interview at your earliest convenience. If you
+                                                encounter any
+                                                technical issues while scheduling, don't hesitate
+                                                to reach out to us.
+                                            </p>
+
+                                            <p>
+                                                Best Regards,<br>
+                                                <strong>{{recruiter_name|default:"Team HDIP"}}</strong><br>
+                                                {% if company_name %}{{company_name}}<br>{% endif %}
+                                                For any support, reach out to us at
+                                                <a
+                                                    href="mailto:{{contact_email|default:'contact@hdiplatform.in'}}">{{contact_email|default:"contact@hdiplatform.in"}}</a>
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <footer>
+                        <div class="email-footer">
+                            <p style="text-align: center;">
+                                <a><img alt="facebook_brand logo" height="30px" width="30px"
+                                        src="https://enablefin.s3.ap-south-1.amazonaws.com/images/facebook.png"></a>
+                                <a href=""><img alt='linkedin brand logo' height="30px" width="30px"
+                                        src="https://enablefin.s3.ap-south-1.amazonaws.com/images/linkedin.png"></a>
+                                <a href=""><img alt="twitter brand logo" height="30px" width="30px"
+                                        src="https://enablefin.s3.ap-south-1.amazonaws.com/images/twitter.png"></a>
+                            </p>
+                            <p>
+                                Adhyapan Training & Development Center LLP
+                            </p>
+                        </div>
+                    </footer>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+
+</html>
