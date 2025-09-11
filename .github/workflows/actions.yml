@@ -22,8 +22,8 @@ jobs:
       uses: google-github-actions/auth@v2
       with:
         token_format: 'access_token'
-        workload_identity_provider: 'principal://iam.googleapis.com/projects/568722140219/locations/global/workloadIdentityPools/github-pool/providers/github'
-        service_account: 'github@hdip-platform.iam.gserviceaccount.com'
+        workload_identity_provider: 'projects/568722140219/locations/global/workloadIdentityPools/github-pool/providers/github'
+        service_account: '568722140219-compute@developer.gserviceaccount.com'
 
     - name: Set up gcloud CLI
       uses: google-github-actions/setup-gcloud@v1
