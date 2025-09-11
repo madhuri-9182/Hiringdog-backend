@@ -19,6 +19,8 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+RUN mkdir -p /app/logs
+RUN chown -R www-data:www-data /app/logs
 
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
