@@ -40,12 +40,30 @@ jobs:
         docker push ${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPO_NAME }}/node-app:latest
 
 
-    - name: Deploy to Cloud Run
+    - name: Create new Instance Template
       run: |
-        gcloud run deploy node-app \
-          --image=${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPO_NAME }}/node-app:latest \
-          --platform=managed \
+        IMAGE=${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPO_NAME }}/node-app:latest
+        TEMPLATE_NAME=node-app-template-$(date +%Y%m%d%H%M%S)
+
+        gcloud compute instance-templates create-with-container $TEMPLATE_NAME \
+          --project=${{ secrets.PROJECT_ID }} \
           --region=${{ secrets.REGION }} \
-          --no-allow-unauthenticated
-      #--port=3000
+          --container-image=$IMAGE \
+          --machine-type=e2-medium \
+          --tags=http-server,https-server
+         
+        echo "TEMPLATE_NAME=$TEMPLATE_NAME" >> $GITHUB_ENV
+
+    - name: Update MIG with new template
+      run: |
+        gcloud compute instance-groups managed set-instance-template ${{ secrets.MIG_NAME }} \
+          --project=${{ secrets.PROJECT_ID }} \
+          --region=${{ secrets.REGION }} \
+          --template=$TEMPLATE_NAME
+
+        gcloud compute instance-groups managed rolling-action start-update ${{ secrets.MIG_NAME }} \
+          --project=${{ secrets.PROJECT_ID }} \
+          --region=${{ secrets.REGION }} \
+          --max-surge=1 \
+          --max-unavailable=0
     
