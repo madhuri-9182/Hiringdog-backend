@@ -47,7 +47,6 @@ jobs:
 
         gcloud compute instance-templates create-with-container $TEMPLATE_NAME \
           --project=${{ secrets.PROJECT_ID }} \
-          --region=${{ secrets.REGION }} \
           --container-image=$IMAGE \
           --machine-type=e2-medium \
           --tags=http-server,https-server
@@ -58,12 +57,12 @@ jobs:
       run: |
         gcloud compute instance-groups managed set-instance-template ${{ secrets.MIG_NAME }} \
           --project=${{ secrets.PROJECT_ID }} \
-          --region=${{ secrets.REGION }} \
+          --zone=${{ secrets.ZONE }} \
           --template=$TEMPLATE_NAME
 
         gcloud compute instance-groups managed rolling-action start-update ${{ secrets.MIG_NAME }} \
           --project=${{ secrets.PROJECT_ID }} \
-          --region=${{ secrets.REGION }} \
+          --zone=${{ secrets.ZONE }} \
           --max-surge=1 \
           --max-unavailable=0
     
