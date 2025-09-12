@@ -33,38 +33,88 @@ source "googlecompute" "debian" {
 
 build {
   sources = ["source.googlecompute.debian"]
-
+  
+  # Copy your application code
+  provisioner "file" {
+    source      = "./"
+    destination = "/tmp/app/"
+  }
+  
   provisioner "shell" {
     inline = [
       # Update system
       "sudo apt-get update -y",
       "sudo apt-get upgrade -y",
-
+      
       # Install Python, pip, venv
-      "sudo apt-get install -y python3 python3-pip python3-venv",
-
-      # Install Gunicorn
-      "pip3 install gunicorn",
-
-      # Install Nginx
+      "sudo apt-get install -y python3 python3-pip python3-venv curl",
+      
+      # Create app directory and copy files
+      "sudo mkdir -p /opt/hiringdog",
+      "sudo cp -r /tmp/app/* /opt/hiringdog/",
+      "sudo chown -R www-data:www-data /opt/hiringdog",
+      
+      # Install Python dependencies
+      "cd /opt/hiringdog && sudo pip3 install -r requirements.txt",
+      "sudo pip3 install gunicorn",
+      
+      # Install and configure Nginx
       "sudo apt-get install -y nginx",
-
-      # Copy app (assuming your repo contains it)
-      "mkdir -p /opt/hiringdog",
-      "cp -r /home/packer/* /opt/hiringdog",
-
-      # Systemd service for Gunicorn
-      "echo '[Unit]\nDescription=Gunicorn instance to serve Hiringdog\nAfter=network.target\n\n[Service]\nUser=www-data\nGroup=www-data\nWorkingDirectory=/opt/hiringdog\nExecStart=/usr/bin/gunicorn --workers 3 --bind unix:/opt/hiringdog/hiringdog.sock wsgi:app\n\n[Install]\nWantedBy=multi-user.target' | sudo tee /etc/systemd/system/hiringdog.service",
-
+      
+      # Create Gunicorn systemd service
+      "sudo tee /etc/systemd/system/hiringdog.service > /dev/null <<EOF",
+      "[Unit]",
+      "Description=Gunicorn instance to serve Hiringdog",
+      "After=network.target",
+      "",
+      "[Service]",
+      "User=www-data",
+      "Group=www-data",
+      "WorkingDirectory=/opt/hiringdog",
+      "ExecStart=/usr/local/bin/gunicorn --workers 3 --bind unix:/opt/hiringdog/hiringdog.sock wsgi:app",
+      "Restart=always",
+      "",
+      "[Install]",
+      "WantedBy=multi-user.target",
+      "EOF",
+      
+      # Enable Gunicorn service
       "sudo systemctl enable hiringdog",
-      "sudo systemctl restart hiringdog",
-
+      
       # Configure Nginx
-      "echo 'server {\n    listen 80;\n    server_name _;\n\n    location / {\n        proxy_pass http://unix:/opt/hiringdog/hiringdog.sock;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n    }\n\n    location /health {\n        return 200 \"healthy\";\n    }\n}' | sudo tee /etc/nginx/sites-available/hiringdog",
-
-      "sudo ln -s /etc/nginx/sites-available/hiringdog /etc/nginx/sites-enabled",
+      "sudo tee /etc/nginx/sites-available/hiringdog > /dev/null <<EOF",
+      "server {",
+      "    listen 80;",
+      "    server_name _;",
+      "",
+      "    location / {",
+      "        proxy_pass http://unix:/opt/hiringdog/hiringdog.sock;",
+      "        proxy_set_header Host \\$host;",
+      "        proxy_set_header X-Real-IP \\$remote_addr;",
+      "        proxy_set_header X-Forwarded-For \\$proxy_add_x_forwarded_for;",
+      "        proxy_set_header X-Forwarded-Proto \\$scheme;",
+      "    }",
+      "",
+      "    location /health {",
+      "        return 200 'healthy';",
+      "        add_header Content-Type text/plain;",
+      "    }",
+      "}",
+      "EOF",
+      
+      # Enable Nginx site
+      "sudo ln -sf /etc/nginx/sites-available/hiringdog /etc/nginx/sites-enabled/",
       "sudo rm -f /etc/nginx/sites-enabled/default",
-      "sudo systemctl restart nginx"
+      
+      # Test Nginx config
+      "sudo nginx -t",
+      
+      # Enable Nginx
+      "sudo systemctl enable nginx",
+      
+      # Clean up
+      "sudo apt-get autoremove -y",
+      "sudo apt-get autoclean"
     ]
   }
 }
