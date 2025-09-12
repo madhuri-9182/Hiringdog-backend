@@ -26,16 +26,28 @@ jobs:
         service_account: 'github-actions@dynamic-now-438707-c1.iam.gserviceaccount.com'
         
     - name: Set up gcloud CLI
-      uses: google-github-actions/setup-gcloud@v2  # Updated version
+      uses: google-github-actions/setup-gcloud@v2
       with:
         project_id: dynamic-now-438707-c1
         
     - name: Setup Packer
       uses: hashicorp/setup-packer@main
       
+    - name: Create deployment archive
+      run: |
+        # Create tar archive with all your code
+        tar -czf app.tar.gz \
+          --exclude='.git' \
+          --exclude='node_modules' \
+          --exclude='__pycache__' \
+          --exclude='*.pyc' \
+          --exclude='.env' \
+          --exclude='*.log' \
+          .
+        ls -la app.tar.gz  # Verify archive was created
+      
     - name: Build Custom Image
       run: |
-        # Fix: Create shorter, valid image name
         SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8)
         IMAGE_NAME="hiringdog-$(date +%y%m%d%H%M%S)-${SHORT_SHA}"
         
@@ -48,6 +60,7 @@ jobs:
           packer-template.pkr.hcl
         echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
         
+    # Rest of your steps remain the same...
     - name: Create new Instance Template
       run: |
         TEMPLATE_NAME=hiringdog-template-$(date +%y%m%d%H%M%S)
@@ -60,7 +73,7 @@ jobs:
             systemctl start nginx
             sleep 15
             curl -f http://localhost/health || exit 1
-          '  # Fixed: Added missing closing quote
+          '
         echo "TEMPLATE_NAME=$TEMPLATE_NAME" >> $GITHUB_ENV
         
     - name: Update MIG with new template

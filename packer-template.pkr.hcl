@@ -34,33 +34,11 @@ source "googlecompute" "debian" {
 build {
   sources = ["source.googlecompute.debian"]
   
-  # Upload code as tar file instead of directory
-  provisioner "shell" {
-    inline = [
-      "mkdir -p /tmp/app"
-    ]
-  }
-  
+  # Upload the tar archive
   provisioner "file" {
-    source      = "./requirements.txt"
-    destination = "/tmp/app/requirements.txt"
+    source      = "app.tar.gz"
+    destination = "/tmp/app.tar.gz"
   }
-  
-  provisioner "file" {
-    source      = "./app.py"  # Your main app file
-    destination = "/tmp/app/app.py"
-  }
-  
-  provisioner "file" {
-    source      = "./wsgi.py"  # Your WSGI file
-    destination = "/tmp/app/wsgi.py"
-  }
-  
-  # Add more files as needed
-  # provisioner "file" {
-  #   source      = "./templates/"
-  #   destination = "/tmp/app/"
-  # }
   
   provisioner "shell" {
     inline = [
@@ -68,20 +46,32 @@ build {
       "sudo apt-get update -y",
       "sudo apt-get upgrade -y",
       
-      # Install Python, pip, venv
-      "sudo apt-get install -y python3 python3-pip python3-venv curl",
+      # Install Python, pip, and other dependencies
+      "sudo apt-get install -y python3 python3-pip python3-venv curl nginx",
       
-      # Create app directory and copy files
+      # Create app directory and extract code
       "sudo mkdir -p /opt/hiringdog",
-      "sudo cp -r /tmp/app/* /opt/hiringdog/",
+      "cd /opt/hiringdog",
+      "sudo tar -xzf /tmp/app.tar.gz",
       "sudo chown -R www-data:www-data /opt/hiringdog",
       
-      # Install Python dependencies
-      "cd /opt/hiringdog && sudo pip3 install -r requirements.txt",
-      "sudo pip3 install gunicorn",
+      # Install Python dependencies (handle missing requirements.txt)
+      "if [ -f /opt/hiringdog/requirements.txt ]; then",
+      "  cd /opt/hiringdog && sudo pip3 install -r requirements.txt",
+      "else",
+      "  echo 'No requirements.txt found, skipping pip install'",
+      "fi",
+      "sudo pip3 install gunicorn flask",  # Install common dependencies
       
-      # Install and configure Nginx
-      "sudo apt-get install -y nginx",
+      # Create a simple WSGI file if it doesn't exist
+      "if [ ! -f /opt/hiringdog/wsgi.py ]; then",
+      "  sudo tee /opt/hiringdog/wsgi.py > /dev/null <<EOF",
+      "from app import app",
+      "",
+      "if __name__ == '__main__':",
+      "    app.run()",
+      "EOF",
+      "fi",
       
       # Create Gunicorn systemd service
       "sudo tee /etc/systemd/system/hiringdog.service > /dev/null <<EOF",
@@ -136,7 +126,8 @@ build {
       
       # Clean up
       "sudo apt-get autoremove -y",
-      "sudo apt-get autoclean"
+      "sudo apt-get autoclean",
+      "rm -f /tmp/app.tar.gz"
     ]
   }
 }
