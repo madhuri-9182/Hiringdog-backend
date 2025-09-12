@@ -46,12 +46,14 @@ jobs:
     - name: Build Custom Image
       run: |
         IMAGE_NAME="hiringdog-$(date +%Y%m%d-%H%M%S)-${{ github.sha }}"
+        packer init .
         packer build \
           -var "project_id=$PROJECT_ID" \
           -var "image_name=$IMAGE_NAME" \
           -var "app_version=${{ github.sha }}" \
           packer-template.pkr.hcl
         echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+      
 
     # 6. Create new instance template
     - name: Create new Instance Template
