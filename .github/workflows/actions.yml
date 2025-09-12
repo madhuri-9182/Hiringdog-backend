@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
 
+env:
+  PROJECT_ID: dynamic-now-438707-c1
+  MIG_NAME: hiringdog-mig
+  ZONE: asia-south1-b
+
 jobs:
   gce-image-deploy:
     runs-on: ubuntu-latest
@@ -32,24 +37,20 @@ jobs:
       with:
         project_id: dynamic-now-438707-c1
 
-    # 4. (Optional) Build & Push Docker Image
-    #    Only needed if you still want Docker artifacts (not for VM baked image).
-    - name: Build & Push Docker image
-      if: env.BUILD_DOCKER == 'true'
-      env:
-        BUILD_DOCKER: ${{ secrets.BUILD_DOCKER }}
-      run: |
-        docker build -t ${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPO_NAME }}/node-app:latest .
-        docker push ${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPO_NAME }}/node-app:latest
 
-    # 5. Build a new GCE image (using packer or disk snapshot)
-    - name: Create new GCE Image
+    # 4. Setup Packer
+    - name: Setup Packer
+      uses: hashicorp/setup-packer@main
+
+    # 5. Build Custom Image with Packer
+    - name: Build Custom Image
       run: |
-        IMAGE_NAME=hiringdog-image-$(date +%Y%m%d%H%M%S)
-        gcloud compute images create $IMAGE_NAME \
-          --source-disk=vm1 \
-          --source-disk-zone=${{ secrets.ZONE }} \
-          --project=dynamic-now-438707-c1
+        IMAGE_NAME="hiringdog-$(date +%Y%m%d-%H%M%S)-${{ github.sha }}"
+        packer build \
+          -var "project_id=$PROJECT_ID" \
+          -var "image_name=$IMAGE_NAME" \
+          -var "app_version=${{ github.sha }}" \
+          packer-template.pkr.hcl
         echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
 
     # 6. Create new instance template
@@ -60,20 +61,50 @@ jobs:
           --machine-type=e2-medium \
           --image=$IMAGE_NAME \
           --tags=http-server,https-server
+          --metadata=startup-script='#!/bin/bash
+            systemctl start gunicorn
+            systemctl start nginx
+            sleep 15
+            curl -f http://localhost/health || exit 1
         echo "TEMPLATE_NAME=$TEMPLATE_NAME" >> $GITHUB_ENV
 
     # 7. Update MIG with new template
     - name: Update MIG with new template
       run: |
-        gcloud compute instance-groups managed set-instance-template ${{ secrets.MIG_NAME }} \
+        gcloud compute instance-groups managed set-instance-template $MIG_NAME \
           --template=$TEMPLATE_NAME \
-          --zone=${{ secrets.ZONE }}
+          --zone=$ZONE
 
     # 8. Start Rolling Update
     - name: Rolling Update MIG
       run: |
-        gcloud compute instance-groups managed rolling-action start-update ${{ secrets.MIG_NAME }} \
+        gcloud compute instance-groups managed rolling-action start-update $MIG_NAME \
           --version=template=$TEMPLATE_NAME \
-          --zone=${{ secrets.ZONE }} \
+          --zone=$ZONE \
           --max-surge=1 \
           --max-unavailable=0
+
+     # 9. Wait for MIG rollout
+    - name: Wait for Rollout
+      run: |
+        gcloud compute instance-groups managed wait-until $MIG_NAME \
+          --version-target-reached \
+          --zone=$ZONE \
+          --timeout=900
+
+      # 10. Verify Instances
+    - name: Verify Deployment
+      run: |
+        gcloud compute instance-groups managed list-instances $MIG_NAME \
+          --zone=$ZONE \
+          --format="table(instance,status,instanceStatus)"
+
+      # 11. Cleanup old images
+    - name: Cleanup Old Images
+      run: |
+        gcloud compute images list \
+          --filter="family=hiringdog-app" \
+          --format="value(name)" \
+          --sort-by="~creationTimestamp" \
+          | tail -n +6 \
+          | xargs -r -I {} gcloud compute images delete {} --quiet
