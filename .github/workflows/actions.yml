@@ -35,7 +35,9 @@ jobs:
     # 4. (Optional) Build & Push Docker Image
     #    Only needed if you still want Docker artifacts (not for VM baked image).
     - name: Build & Push Docker image
-      if: ${{ secrets.BUILD_DOCKER == 'true' }}
+      if: env.BUILD_DOCKER == 'true'
+      env:
+        BUILD_DOCKER: ${{ secrets.BUILD_DOCKER }}
       run: |
         docker build -t ${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPO_NAME }}/node-app:latest .
         docker push ${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPO_NAME }}/node-app:latest
