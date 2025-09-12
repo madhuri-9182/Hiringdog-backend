@@ -34,11 +34,33 @@ source "googlecompute" "debian" {
 build {
   sources = ["source.googlecompute.debian"]
   
-  # Copy your application code
-  provisioner "file" {
-    source      = "./"
-    destination = "/tmp/app/"
+  # Upload code as tar file instead of directory
+  provisioner "shell" {
+    inline = [
+      "mkdir -p /tmp/app"
+    ]
   }
+  
+  provisioner "file" {
+    source      = "./requirements.txt"
+    destination = "/tmp/app/requirements.txt"
+  }
+  
+  provisioner "file" {
+    source      = "./app.py"  # Your main app file
+    destination = "/tmp/app/app.py"
+  }
+  
+  provisioner "file" {
+    source      = "./wsgi.py"  # Your WSGI file
+    destination = "/tmp/app/wsgi.py"
+  }
+  
+  # Add more files as needed
+  # provisioner "file" {
+  #   source      = "./templates/"
+  #   destination = "/tmp/app/"
+  # }
   
   provisioner "shell" {
     inline = [
