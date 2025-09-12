@@ -1,9 +1,7 @@
 name: Auto Deploy to MIG (Image-Based)
-
 on:
   push:
     branches: [main]
-
 env:
   PROJECT_ID: dynamic-now-438707-c1
   MIG_NAME: hiringdog-mig
@@ -12,17 +10,13 @@ env:
 jobs:
   gce-image-deploy:
     runs-on: ubuntu-latest
-
     permissions:
-      id-token: write   # REQUIRED for Workload Identity Federation
+      id-token: write
       contents: read
-
     steps:
-    # 1. Checkout repo
     - name: Checkout code
       uses: actions/checkout@v4
-
-    # 2. Auth to GCP with WIF
+      
     - name: Authenticate to Google Cloud
       id: auth
       uses: google-github-actions/auth@v2
@@ -30,22 +24,22 @@ jobs:
         token_format: 'access_token'
         workload_identity_provider: 'projects/568722140219/locations/global/workloadIdentityPools/github-pool/providers/github'
         service_account: 'github-actions@dynamic-now-438707-c1.iam.gserviceaccount.com'
-
-    # 3. Set up gcloud CLI
+        
     - name: Set up gcloud CLI
-      uses: google-github-actions/setup-gcloud@v1
+      uses: google-github-actions/setup-gcloud@v2  # Updated version
       with:
         project_id: dynamic-now-438707-c1
-
-
-    # 4. Setup Packer
+        
     - name: Setup Packer
       uses: hashicorp/setup-packer@main
-
-    # 5. Build Custom Image with Packer
+      
     - name: Build Custom Image
       run: |
-        IMAGE_NAME="hiringdog-$(date +%Y%m%d-%H%M%S)-${{ github.sha }}"
+        # Fix: Create shorter, valid image name
+        SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8)
+        IMAGE_NAME="hiringdog-$(date +%y%m%d%H%M%S)-${SHORT_SHA}"
+        
+        echo "Building image: $IMAGE_NAME"
         packer init .
         packer build \
           -var "project_id=$PROJECT_ID" \
@@ -53,31 +47,28 @@ jobs:
           -var "app_version=${{ github.sha }}" \
           packer-template.pkr.hcl
         echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
-      
-
-    # 6. Create new instance template
+        
     - name: Create new Instance Template
       run: |
-        TEMPLATE_NAME=hiringdog-template-$(date +%Y%m%d%H%M%S)
+        TEMPLATE_NAME=hiringdog-template-$(date +%y%m%d%H%M%S)
         gcloud compute instance-templates create $TEMPLATE_NAME \
           --machine-type=e2-medium \
           --image=$IMAGE_NAME \
-          --tags=http-server,https-server
+          --tags=http-server,https-server \
           --metadata=startup-script='#!/bin/bash
-            systemctl start gunicorn
+            systemctl start hiringdog
             systemctl start nginx
             sleep 15
             curl -f http://localhost/health || exit 1
+          '  # Fixed: Added missing closing quote
         echo "TEMPLATE_NAME=$TEMPLATE_NAME" >> $GITHUB_ENV
-
-    # 7. Update MIG with new template
+        
     - name: Update MIG with new template
       run: |
         gcloud compute instance-groups managed set-instance-template $MIG_NAME \
           --template=$TEMPLATE_NAME \
           --zone=$ZONE
-
-    # 8. Start Rolling Update
+          
     - name: Rolling Update MIG
       run: |
         gcloud compute instance-groups managed rolling-action start-update $MIG_NAME \
@@ -85,23 +76,20 @@ jobs:
           --zone=$ZONE \
           --max-surge=1 \
           --max-unavailable=0
-
-     # 9. Wait for MIG rollout
+          
     - name: Wait for Rollout
       run: |
         gcloud compute instance-groups managed wait-until $MIG_NAME \
           --version-target-reached \
           --zone=$ZONE \
           --timeout=900
-
-      # 10. Verify Instances
+          
     - name: Verify Deployment
       run: |
         gcloud compute instance-groups managed list-instances $MIG_NAME \
           --zone=$ZONE \
           --format="table(instance,status,instanceStatus)"
-
-      # 11. Cleanup old images
+          
     - name: Cleanup Old Images
       run: |
         gcloud compute images list \
