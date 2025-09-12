@@ -36,15 +36,28 @@ jobs:
     - name: Create deployment archive
       run: |
         # Create tar archive with all your code
+         # Simple and robust approach
+        set +e
         tar -czf app.tar.gz \
-          --exclude='.git' \
+          --exclude='.git*' \
           --exclude='node_modules' \
           --exclude='__pycache__' \
           --exclude='*.pyc' \
-          --exclude='.env' \
+          --exclude='.env*' \
           --exclude='*.log' \
+          --exclude='venv' \
+          --exclude='app.tar.gz' \
           .
-        ls -la app.tar.gz  # Verify archive was created
+        
+        if [ -f app.tar.gz ] && [ -s app.tar.gz ]; then
+          echo "✅ Archive created successfully"
+          ls -lh app.tar.gz
+          set -e
+        else
+          echo "❌ Failed to create archive"
+          .
+        exit 1
+        fi
       
     - name: Build Custom Image
       run: |
