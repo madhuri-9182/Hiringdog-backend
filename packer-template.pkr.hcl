@@ -32,7 +32,7 @@ source "googlecompute" "ubuntu" {
 }
 
 build {
-  sources = ["source.googlecompute.debian"]
+  sources = ["source.googlecompute.ubuntu"]
   
   # Upload the tar archive
   provisioner "file" {
