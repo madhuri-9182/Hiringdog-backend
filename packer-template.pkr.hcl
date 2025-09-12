@@ -20,10 +20,10 @@ variable "app_version" {
   default = "dev"
 }
 
-source "googlecompute" "debian" {
+source "googlecompute" "ubuntu" {
   project_id          = var.project_id
   machine_type        = "e2-medium"
-  source_image_family = "debian-11"
+  source_image_family = "ubuntu-2204-lts"
   zone                = "asia-south1-b"
   disk_size           = 20
   ssh_username        = "packer"
@@ -62,6 +62,8 @@ build {
       "  echo 'No requirements.txt found, skipping pip install'",
       "fi",
       "sudo pip3 install gunicorn flask",  # Install common dependencies
+ 
+
       
       # Create a simple WSGI file if it doesn't exist
       "if [ ! -f /opt/hiringdog/wsgi.py ]; then",
