@@ -24,7 +24,7 @@ jobs:
       with:
         token_format: 'access_token'
         workload_identity_provider: 'projects/568722140219/locations/global/workloadIdentityPools/github-pool/providers/github'
-        service_account: '568722140219-compute@developer.gserviceaccount.com'
+        service_account: 'github-actions@dynamic-now-438707-c1.iam.gserviceaccount.com'
 
     # 3. Set up gcloud CLI
     - name: Set up gcloud CLI
