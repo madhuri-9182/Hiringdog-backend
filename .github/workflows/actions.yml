@@ -30,7 +30,7 @@ jobs:
     - name: Set up gcloud CLI
       uses: google-github-actions/setup-gcloud@v1
       with:
-        project_id: ${{ secrets.PROJECT_ID }}
+        project_id: dynamic-now-438707-c1
 
     # 4. (Optional) Build & Push Docker Image
     #    Only needed if you still want Docker artifacts (not for VM baked image).
@@ -50,7 +50,7 @@ jobs:
         gcloud compute images create $IMAGE_NAME \
           --source-disk=vm1 \
           --source-disk-zone=${{ secrets.ZONE }}
-          --project=$PROJECT_ID
+          --project=dynamic-now-438707-c1
         echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
 
     # 6. Create new instance template
