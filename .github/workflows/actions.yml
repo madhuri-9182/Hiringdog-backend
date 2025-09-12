@@ -46,10 +46,9 @@ jobs:
     - name: Create new GCE Image
       run: |
         IMAGE_NAME=hiringdog-image-$(date +%Y%m%d%H%M%S)
-        # Option A: if you maintain a "builder VM"
         gcloud compute images create $IMAGE_NAME \
           --source-disk=vm1 \
-          --source-disk-zone=${{ secrets.ZONE }}
+          --source-disk-zone=${{ secrets.ZONE }} \
           --project=dynamic-now-438707-c1
         echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
 
