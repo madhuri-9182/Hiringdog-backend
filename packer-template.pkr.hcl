@@ -48,7 +48,7 @@ build {
       
       # Install Python, pip, and other dependencies
       "sudo apt install -y python3 python3-pip python3-venv curl nginx",
-      "sudo apt install pkg-config python3-dev default-libmysqlclient-dev build-essential",
+      "sudo apt install -y pkg-config python3-dev default-libmysqlclient-dev build-essential",
       
       # Create app directory and extract code
       "sudo mkdir -p /opt/hiringdog",
