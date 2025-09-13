@@ -41,13 +41,16 @@ build {
   }
   
   provisioner "shell" {
+    environment_vars = [
+      "DEBIAN_FRONTEND=noninteractive"
+    ]
     inline = [
       # Update system
       "sudo apt-get update -y",
       "sudo apt-get upgrade -y",
       
       # Install Python, pip, and other dependencies
-      "sudo apt install -y python3 python3-pip python3-venv curl nginx",
+      "sudo apt install -y python3 python3-pip python3-venv python3-full curl nginx",
       "sudo apt install -y pkg-config python3-dev default-libmysqlclient-dev build-essential",
       
       # Create app directory and extract code
@@ -56,15 +59,16 @@ build {
       "sudo tar -xzf /tmp/app.tar.gz",
       "sudo chown -R www-data:www-data /opt/hiringdog",
       
-      # Install Python dependencies (handle missing requirements.txt)
+      # Create virtual environment
+      "sudo -u www-data python3 -m venv /opt/hiringdog/venv",
+      
+      # Install Python dependencies in virtual environment
       "if [ -f /opt/hiringdog/requirements.txt ]; then",
-      "  cd /opt/hiringdog && sudo pip install -r requirements.txt",
+      "  sudo -u www-data /opt/hiringdog/venv/bin/pip install -r /opt/hiringdog/requirements.txt",
       "else",
-      "  echo 'No requirements.txt found, skipping pip install'",
+      "  echo 'No requirements.txt found, installing common dependencies'",
+      "  sudo -u www-data /opt/hiringdog/venv/bin/pip install gunicorn flask",
       "fi",
-      "sudo pip3 install gunicorn flask",  # Install common dependencies
- 
-
       
       # Create a simple WSGI file if it doesn't exist
       "if [ ! -f /opt/hiringdog/wsgi.py ]; then",
@@ -74,9 +78,10 @@ build {
       "if __name__ == '__main__':",
       "    app.run()",
       "EOF",
+      "  sudo chown www-data:www-data /opt/hiringdog/wsgi.py",
       "fi",
       
-      # Create Gunicorn systemd service
+      # Create Gunicorn systemd service (updated to use virtual environment)
       "sudo tee /etc/systemd/system/hiringdog.service > /dev/null <<EOF",
       "[Unit]",
       "Description=Gunicorn instance to serve Hiringdog",
@@ -86,7 +91,8 @@ build {
       "User=www-data",
       "Group=www-data",
       "WorkingDirectory=/opt/hiringdog",
-      "ExecStart=/usr/local/bin/gunicorn --workers 3 --bind unix:/opt/hiringdog/hiringdog.sock wsgi:app",
+      "Environment=PATH=/opt/hiringdog/venv/bin",
+      "ExecStart=/opt/hiringdog/venv/bin/gunicorn --workers 3 --bind unix:/opt/hiringdog/hiringdog.sock wsgi:app",
       "Restart=always",
       "",
       "[Install]",
