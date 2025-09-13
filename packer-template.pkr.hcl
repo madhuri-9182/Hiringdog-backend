@@ -58,7 +58,7 @@ build {
       
       # Install Python dependencies (handle missing requirements.txt)
       "if [ -f /opt/hiringdog/requirements.txt ]; then",
-      "  cd /opt/hiringdog && sudo pip3 install -r requirements.txt",
+      "  cd /opt/hiringdog && sudo pip install -r requirements.txt",
       "else",
       "  echo 'No requirements.txt found, skipping pip install'",
       "fi",
