@@ -23,7 +23,7 @@ variable "app_version" {
 source "googlecompute" "ubuntu" {
   project_id          = var.project_id
   machine_type        = "e2-medium"
-  source_image_family = "ubuntu-2204-lts"
+  source_image_family = "ubuntu-2404-lts"
   zone                = "asia-south1-b"
   disk_size           = 20
   ssh_username        = "packer"
