@@ -92,7 +92,7 @@ jobs:
           '
         echo "TEMPLATE_NAME=$TEMPLATE_NAME" >> $GITHUB_ENV
 
-   - name: Check if MIG exists and create if needed
+    - name: Check if MIG exists and create if needed
       run: |
         # Check if MIG exists
         if ! gcloud compute instance-groups managed describe $MIG_NAME --zone=$ZONE --quiet >/dev/null 2>&1; then
