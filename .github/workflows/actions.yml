@@ -92,32 +92,18 @@ jobs:
           '
         echo "TEMPLATE_NAME=$TEMPLATE_NAME" >> $GITHUB_ENV
 
-    - name: Check if MIG exists and create if needed
+   - name: Check if MIG exists and create if needed
       run: |
         # Check if MIG exists
         if ! gcloud compute instance-groups managed describe $MIG_NAME --zone=$ZONE --quiet >/dev/null 2>&1; then
           echo "MIG $MIG_NAME does not exist. Creating it..."
           
-          # Create health check first
-          if ! gcloud compute health-checks describe hiringdog-health-check --quiet >/dev/null 2>&1; then
-            echo "Creating health check..."
-            gcloud compute health-checks create http hiringdog-health-check \
-              --port=80 \
-              --request-path=/health \
-              --check-interval=30s \
-              --timeout=10s \
-              --unhealthy-threshold=3 \
-              --healthy-threshold=2
-          fi
-          
-          # Create the MIG
+          # Create the MIG (NO HEALTH CHECK)
           gcloud compute instance-groups managed create $MIG_NAME \
             --base-instance-name=hiringdog \
             --size=1 \
             --template=$TEMPLATE_NAME \
-            --zone=$ZONE \
-            --health-check=hiringdog-health-check \
-            --initial-delay=300s
+            --zone=$ZONE
           
           # Configure auto-scaling
           gcloud compute instance-groups managed set-autoscaling $MIG_NAME \
