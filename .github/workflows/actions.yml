@@ -143,12 +143,14 @@ jobs:
         echo "=== MIG Instance Status ==="
         gcloud compute instance-groups managed list-instances $MIG_NAME \
           --zone=$ZONE \
-          --format="table(instance,status,instanceStatus)"
+          --format="table(name,status,instanceStatus)"
           
         echo "=== Getting instance external IP ==="
         INSTANCE_NAME=$(gcloud compute instance-groups managed list-instances $MIG_NAME \
           --zone=$ZONE \
-          --format="value(instance)" | head -n1)
+          --format="value(name)" | head -n1)
+        
+        echo "Found instance: $INSTANCE_NAME"
         
         if [ ! -z "$INSTANCE_NAME" ]; then
           EXTERNAL_IP=$(gcloud compute instances describe $INSTANCE_NAME \
@@ -158,8 +160,14 @@ jobs:
           echo "External IP: $EXTERNAL_IP"
           
           # Test the health endpoint
-          echo "Testing health endpoint..."
-          curl -f "http://$EXTERNAL_IP/health" || echo "Health check failed"
+          if [ ! -z "$EXTERNAL_IP" ]; then
+            echo "Testing health endpoint..."
+            curl -f "http://$EXTERNAL_IP/health" || echo "Health check failed"
+          else
+            echo "No external IP found - instance might not have finished starting"
+          fi
+        else
+          echo "No instances found in MIG"
         fi
           
     - name: Cleanup Old Images
