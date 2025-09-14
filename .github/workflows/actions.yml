@@ -89,8 +89,7 @@ jobs:
             systemctl start nginx
             sleep 15
             curl -f http://localhost/health || exit 1
-          ' \
-          --global
+          '
         echo "TEMPLATE_NAME=$TEMPLATE_NAME" >> $GITHUB_ENV
 
     - name: Check if MIG exists and create if needed
