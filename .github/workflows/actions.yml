@@ -99,26 +99,17 @@ jobs:
           echo "MIG $MIG_NAME does not exist. Creating it..."
           
           # Create health check first
-          HEALTH_CHECK_FLAG=""
-          if gcloud compute health-checks describe hiringdog-health-check --quiet >/dev/null 2>&1; then
-            echo "Health check already exists, reusing it."
-            HEALTH_CHECK_FLAG="--health-check=hiringdog-health-check"
-          else
-            echo "Attempting to create health check..."
-            if gcloud compute health-checks create http hiringdog-health-check \
-             --port=80 \
-             --request-path=/health \
-             --check-interval=30s \
-             --timeout=10s \
-             --unhealthy-threshold=3 \
-             --healthy-threshold=2; then
-             HEALTH_CHECK_FLAG="--health-check=hiringdog-health-check"
-            else
-              echo "⚠️ Skipping health check creation due to missing permissions"
-            fi
-         fi
-
-
+          if ! gcloud compute health-checks describe hiringdog-health-check --quiet >/dev/null 2>&1; then
+            echo "Creating health check..."
+            gcloud compute health-checks create http hiringdog-health-check \
+              --port=80 \
+              --request-path=/health \
+              --check-interval=30s \
+              --timeout=10s \
+              --unhealthy-threshold=3 \
+              --healthy-threshold=2
+          fi
+          
           # Create the MIG
           gcloud compute instance-groups managed create $MIG_NAME \
             --base-instance-name=hiringdog \
