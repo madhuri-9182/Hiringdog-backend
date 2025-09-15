@@ -100,7 +100,7 @@ build {
       "WorkingDirectory=/opt/hiringdog",
 
       "Environment=PATH=/opt/hiringdog/venv/bin",
-      "EnvironmentFile=/opt/hiringdog/secrets/hiringdog.env",
+     # EnvironmentFile=/opt/hiringdog/secrets/hiringdog.env
       "Environment=PYTHONUNBUFFERED=1",
 
       "ExecStart=/opt/hiringdog/venv/bin/gunicorn --workers 2 --pid /run/gunicorn/gunicorn.pid --bind 127.0.0.1:8000 hiringdogbackend.wsgi:application",
