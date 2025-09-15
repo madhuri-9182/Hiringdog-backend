@@ -140,6 +140,14 @@ build {
       "    }",
       "}",
       "EOF",
+
+      # Create necessary directories for Django
+      "sudo mkdir -p /opt/hiringdog/staticfiles",
+      "sudo mkdir -p /opt/hiringdog/media",
+      "sudo mkdir -p /opt/hiringdog/logs",
+      "sudo chown -R www-data:www-data /opt/hiringdog/staticfiles",
+      "sudo chown -R www-data:www-data /opt/hiringdog/media",
+      "sudo chown -R www-data:www-data /opt/hiringdog/logs",
       
       # Enable Nginx site
       "sudo ln -sf /etc/nginx/sites-available/hiringdog /etc/nginx/sites-enabled/",
