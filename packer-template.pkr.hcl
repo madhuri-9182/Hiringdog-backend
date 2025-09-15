@@ -70,21 +70,38 @@ build {
       "  sudo -u www-data /opt/hiringdog/venv/bin/pip install gunicorn flask",
       "fi",
       
-      # Create a simple WSGI file if it doesn't exist
-      "if [ ! -f /opt/hiringdog/wsgi.py ]; then",
+      # Create proper Django WSGI file (only if wsgi.py doesn't exist in the project structure)
+      "if [ ! -f /opt/hiringdog/hiringdogbackend/wsgi.py ]; then",
+      "  echo 'WSGI file not found in expected location. Creating a generic one.'",
       "  sudo tee /opt/hiringdog/wsgi.py > /dev/null <<EOF",
-      "from app import app",
+      "import os",
+      "import sys",
+      "from django.core.wsgi import get_wsgi_application",
       "",
-      "if __name__ == '__main__':",
-      "    app.run()",
+      "# Add the project directory to Python path",
+      "sys.path.insert(0, '/opt/hiringdog')",
+      "",
+      "# Set the Django settings module",
+      "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hiringdogbackend.settings')",
+      "",
+      "application = get_wsgi_application()",
       "EOF",
       "  sudo chown www-data:www-data /opt/hiringdog/wsgi.py",
+      "else",
+      "  echo 'Using existing WSGI file from Django project'",
       "fi",
+
+       
+      # Run Django migrations and collect static files
+      "cd /opt/hiringdog",
+      "sudo -u www-data /opt/hiringdog/venv/bin/python manage.py migrate --noinput || true",
+      "sudo -u www-data /opt/hiringdog/venv/bin/python manage.py collectstatic --noinput || true",
       
-      # Create Gunicorn systemd service (updated to use virtual environment)
+      
+     # Create Gunicorn systemd service for Django
       "sudo tee /etc/systemd/system/hiringdog.service > /dev/null <<EOF",
       "[Unit]",
-      "Description=Gunicorn instance to serve Hiringdog",
+      "Description=Gunicorn instance to serve Hiringdog Django App",
       "After=network.target",
       "",
       "[Service]",
@@ -92,7 +109,8 @@ build {
       "Group=www-data",
       "WorkingDirectory=/opt/hiringdog",
       "Environment=PATH=/opt/hiringdog/venv/bin",
-      "ExecStart=/opt/hiringdog/venv/bin/gunicorn --workers 3 --bind unix:/opt/hiringdog/hiringdog.sock wsgi:app",
+      "Environment=DJANGO_SETTINGS_MODULE=hiringdogbackend.settings",
+      "ExecStart=/opt/hiringdog/venv/bin/gunicorn --workers 3 --bind unix:/opt/hiringdog/hiringdog.sock hiringdogbackend.wsgi:application",
       "Restart=always",
       "",
       "[Install]",
