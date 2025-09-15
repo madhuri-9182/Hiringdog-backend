@@ -50,8 +50,8 @@ build {
       "sudo apt-get upgrade -y",
       
       # Install Python, pip, and other dependencies
-      "sudo apt install -y python3 python3-pip python3-venv python3-full curl nginx",
-      "sudo apt install -y pkg-config python3-dev default-libmysqlclient-dev build-essential",
+      "sudo apt-get install -y python3 python3-pip python3-venv python3-full curl nginx",
+      "sudo apt-get install -y pkg-config python3-dev default-libmysqlclient-dev build-essential",
       
       # Create app directory and extract code
       "sudo mkdir -p /opt/hiringdog",
@@ -66,40 +66,30 @@ build {
       "if [ -f /opt/hiringdog/requirements.txt ]; then",
       "  sudo -u www-data /opt/hiringdog/venv/bin/pip install -r /opt/hiringdog/requirements.txt",
       "else",
-      "  echo 'No requirements.txt found, installing common dependencies'",
-      "  sudo -u www-data /opt/hiringdog/venv/bin/pip install gunicorn flask",
+      "  echo 'No requirements.txt found'",
       "fi",
-      
-      # Create proper Django WSGI file (only if wsgi.py doesn't exist in the project structure)
-      "if [ ! -f /opt/hiringdog/hiringdogbackend/wsgi.py ]; then",
-      "  echo 'WSGI file not found in expected location. Creating a generic one.'",
-      "  sudo tee /opt/hiringdog/wsgi.py > /dev/null <<EOF",
-      "import os",
-      "import sys",
-      "from django.core.wsgi import get_wsgi_application",
-      "",
-      "# Add the project directory to Python path",
-      "sys.path.insert(0, '/opt/hiringdog')",
-      "",
-      "# Set the Django settings module",
-      "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hiringdogbackend.settings')",
-      "",
-      "application = get_wsgi_application()",
-      "EOF",
-      "  sudo chown www-data:www-data /opt/hiringdog/wsgi.py",
-      "else",
-      "  echo 'Using existing WSGI file from Django project'",
-      "fi",
-
        
+      # Create necessary directories for Django
+      "sudo mkdir -p /opt/hiringdog/staticfiles",
+      "sudo mkdir -p /opt/hiringdog/media",
+      "sudo mkdir -p /opt/hiringdog/logs",
+      "sudo mkdir -p /opt/hiringdog/secrets",
+      "sudo mkdir -p /var/log/hiringdog",
+      "sudo chown -R www-data:www-data /opt/hiringdog/staticfiles",
+      "sudo chown -R www-data:www-data /opt/hiringdog/media",
+      "sudo chown -R www-data:www-data /opt/hiringdog/logs",
+      "sudo chown -R www-data:www-data /opt/hiringdog/secrets",
+      "sudo chown -R www-data:www-data /var/log/hiringdog",
+
+
       # Run Django migrations and collect static files
       "cd /opt/hiringdog",
       "sudo -u www-data /opt/hiringdog/venv/bin/python manage.py migrate --noinput || true",
       "sudo -u www-data /opt/hiringdog/venv/bin/python manage.py collectstatic --noinput || true",
-      
+
       
      # Create Gunicorn systemd service for Django
-      "sudo tee /etc/systemd/system/hiringdog.service > /dev/null <<EOF",
+      "sudo tee /etc/systemd/system/gunicorn.service > /dev/null <<EOF",
       "[Unit]",
       "Description=Gunicorn instance to serve Hiringdog Django App",
       "After=network.target",
@@ -108,26 +98,44 @@ build {
       "User=www-data",
       "Group=www-data",
       "WorkingDirectory=/opt/hiringdog",
+
       "Environment=PATH=/opt/hiringdog/venv/bin",
-      "Environment=DJANGO_SETTINGS_MODULE=hiringdogbackend.settings",
-      "ExecStart=/opt/hiringdog/venv/bin/gunicorn --workers 3 --bind unix:/opt/hiringdog/hiringdog.sock hiringdogbackend.wsgi:application",
+      "EnvironmentFile=/opt/hiringdog/secrets/hiringdog.env",
+      "Environment=PYTHONUNBUFFERED=1",
+
+      "ExecStart=/opt/hiringdog/venv/bin/gunicorn --workers 2 --pid /run/gunicorn/gunicorn.pid --bind 127.0.0.1:8000 hiringdogbackend.wsgi:application",
+      "ExecReload=/bin/kill -s USR2 \\$MAINPID",
+      "ExecStop=/bin/kill -s TERM \\$MAINPID",
       "Restart=always",
+      "RestartSec=10",
+      "RuntimeDirectory=gunicorn",
+      "RuntimeDirectoryMode=0755",
+
+      # Logging (systemd manages rotation)
+      "StandardOutput=append:/var/log/hiringdog/gunicorn.log",
+      "StandardError=append:/var/log/hiringdog/gunicorn_error.log",
+      # Resource tuning
+      "LimitNOFILE=4096",
       "",
+      
       "[Install]",
       "WantedBy=multi-user.target",
       "EOF",
       
       # Enable Gunicorn service
-      "sudo systemctl enable hiringdog",
+      "sudo systemctl enable gunicorn",
       
       # Configure Nginx
-      "sudo tee /etc/nginx/sites-available/hiringdog > /dev/null <<EOF",
+      "sudo tee /etc/nginx/sites-available/hiringdogbackend > /dev/null <<EOF",
+      
       "server {",
-      "    listen 80;",
+      "    listen 80 default_server;",
+      "    listen [::]:80 default_server;",
       "    server_name _;",
       "",
+
       "    location / {",
-      "        proxy_pass http://unix:/opt/hiringdog/hiringdog.sock;",
+      "        proxy_pass http://127.0.0.1:8000;",
       "        proxy_set_header Host \\$host;",
       "        proxy_set_header X-Real-IP \\$remote_addr;",
       "        proxy_set_header X-Forwarded-For \\$proxy_add_x_forwarded_for;",
@@ -138,19 +146,14 @@ build {
       "        return 200 'healthy';",
       "        add_header Content-Type text/plain;",
       "    }",
+           # Logs
+      "    error_log /var/log/nginx/hiringdogbackend_error.log;",
+      "    access_log /var/log/nginx/hiringdogbackend_access.log;",
       "}",
       "EOF",
-
-      # Create necessary directories for Django
-      "sudo mkdir -p /opt/hiringdog/staticfiles",
-      "sudo mkdir -p /opt/hiringdog/media",
-      "sudo mkdir -p /opt/hiringdog/logs",
-      "sudo chown -R www-data:www-data /opt/hiringdog/staticfiles",
-      "sudo chown -R www-data:www-data /opt/hiringdog/media",
-      "sudo chown -R www-data:www-data /opt/hiringdog/logs",
       
       # Enable Nginx site
-      "sudo ln -sf /etc/nginx/sites-available/hiringdog /etc/nginx/sites-enabled/",
+      "sudo ln -sf /etc/nginx/sites-available/hiringdogbackend /etc/nginx/sites-enabled/",
       "sudo rm -f /etc/nginx/sites-enabled/default",
       
       # Test Nginx config
