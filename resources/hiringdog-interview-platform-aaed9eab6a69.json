@@ -1,0 +1,13 @@
+{
+    "type": "service_account",
+    "project_id": "hiringdog-interview-platform",
+    "private_key_id": "aaed9eab6a69d27cab24eaba6a3a7a580e39a880",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC11jbgkLAQjkMm\nVvoEGd/BtGGtup0qv7uvNK1fIkvEK2s6WzncEqZ9rfIXIv3ZR6kJLz7N9/BExT+m\n3V7zeOG2EVaNJ2f6Ew3XXqImHRFmbqo9gr9Rk7M8cmGp12BrhlPhch0oKh2+m+2q\ni0ON7oja9clbTKCqpqyNuUOXhjotg597ERQywey9gMKXI0vwGEDxnLWksYHjA/Ax\nHgkmjM6AnPJBHO68S1gh622CtvFXOwWF4WtkKfk2CGyWrpQoNRr5UXbI5Lf3JkQl\nIIqHcwICbsiI/JuSZu4RT7a3JA+SgQ6eCCevHXmeeqPE1uH1JTG3kkt6B1KX+Jqk\nOYqPHD7xAgMBAAECggEANLsLLPIobJSkunCMjjXmomipztSIEUaKqdNP13+9kwS4\nUrLzw3MRHu8bfkQicykJxuURhG87GOZOgBhAGcDbS44ZmFNuHqH56JPD1+OkER1U\ndwP8cS6w0n2k/ri7eFL67izGcchM2eKj+EnsbDNZMo4GN1iwWux8q5inFkDRjDLa\n0UzZctOcva96vE4cYZ04kRkXYOy5GqqAvRHZkmEM2Nw68FzjthcC8aval+JsliqZ\nz4KHiRxnNwxlid3yQbYtxq9s593cc73kbAH0WIqO/0PuSMGS8z8NqgdFqb2+5fwT\n+yb+q7r23wKDLRWnKgWqdi/6nKnHRB8OQ/Uyjt/9VQKBgQDniX8psVaYe9JYtefy\n5DrWqSKhTLn+o7pCS6DK41L1ZTa/CfIzFt235RPmEOr6FYWvUjjaSfpLwF6boq+0\n4ox4hYWlPf0ofgQsFDfYV9tjp5z4CIN4TXhMWCur3bouCKoJ7W5gJBNsXe3lqEvj\nTeEPOJs2fCSmxnejspRMOnM3XwKBgQDJDHKItAaXftijBeZNNbVhJWRKtXmltknO\n/B/mZM/nAmk7yblvRVKQX8XP8b/WHLeBd2Us0msMr/sWTquH3nVHo3Nn8jyzbinx\n5J00YbBiBj3Wa2GAau5uTnwugSpLGBW8WiLeEaNHrChVbU/swYWQ8IoZCaBKkLi2\nWru323m7rwKBgQCHqSFPzW8+krYxcgvAXgc3hQwcVDdaQpY8h9FjbwRJcg88qdg2\nJPyt5dPd5iW3d+rHSbaz98pmngUQzaaDpoXFi/49Tm/JTOSm6wW5heiuoCOxlFNr\npoCIwtR7s8OFe2Adxvb378tNoE9mU1B7k0L9xx3yM5TJ/tlUmaqYa1rcowKBgQCF\n0dkykNGKaQ39hOHEJqmyHddhuuVbnbgHI95/1j5j/0DYYO8i1zubiYP7Y2hTNg4X\nCMe5S92hNkmkkXyvFS1vH6ajW6N3sy4MKiVRRmzG8myamiLt/T7zAR67PZJPJZri\nIgTvV0IdZMP8CKSYbD9hOBpTjAq7VxT7m+0y9c1TVQKBgCgkupmN5E6/ayux08Gh\npFRMh8N46KCdAxtywdJ7YjQNwCtXnK7Q+aueeBkcXUL3HDz2CXQXtLUATbbSOBMo\nERmLMlW6tv1MAtkGqj76kUajs7c+bcnSiB52awBgN5a9mEhkS1ceXFOtsBRWVwYB\nya8pSyN2J8tPlJtTP2LOcQ1m\n-----END PRIVATE KEY-----\n",
+    "client_email": "hdiplatform-api-access@hiringdog-interview-platform.iam.gserviceaccount.com",
+    "client_id": "106615068212280016120",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/hdiplatform-api-access%40hiringdog-interview-platform.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+  }
