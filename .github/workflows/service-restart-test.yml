@@ -1,4 +1,4 @@
-name: Manual Service Restart Test
+name: Manual Service Restart
 
 on:
   workflow_dispatch:
