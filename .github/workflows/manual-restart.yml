@@ -6,7 +6,7 @@ on:
       service:
         description: 'Service to restart'
         required: true
-        default: 'all'
+        default: 'all' 
         type: choice
         options:
           - gunicorn
