@@ -27,7 +27,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Restart Service
+      - name: Restart Services
         run: |
           echo "Restarting ${{ github.event.inputs.service }} - ${{ github.event.inputs.reason }}"
           
