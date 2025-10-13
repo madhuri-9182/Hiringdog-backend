@@ -1,4 +1,4 @@
-name: Auto Deploy to MIG (Image-Based)
+name: Auto Deploy to MIG (Image-Based-test)
 on:
   push:
     branches: [script-sh]
