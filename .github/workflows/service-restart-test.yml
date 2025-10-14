@@ -2,6 +2,11 @@ name: Manual Service Restart Test
 
 on:
   workflow_dispatch:
+
+  push:
+    branches: [script-sh]
+    paths: ['.github/workflows/service-restart-test.yml']
+    
     inputs:
       service:
         description: 'Service to restart'
