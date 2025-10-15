@@ -2,7 +2,7 @@ name: Auto Deploy to MIG (Image-test-based)
 
 on:
   push:
-    branches: [main]
+    branches: ['feature-1']
 
 jobs:
   gce-image-deploy:
