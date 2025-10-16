@@ -7,11 +7,9 @@ on:
 jobs:
   gce-image-deploy:
     runs-on: ubuntu-latest
-
     permissions:
-      id-token: write   # REQUIRED for Workload Identity Federation
+      id-token: write
       contents: read
-
     steps:
     # 1. Checkout repo
     - name: Checkout code
@@ -28,7 +26,7 @@ jobs:
 
     # 3. Set up gcloud CLI
     - name: Set up gcloud CLI
-      uses: google-github-actions/setup-gcloud@v1
+      uses: google-github-actions/setup-gcloud@v2
       with:
         project_id: dynamic-now-438707-c1
 
